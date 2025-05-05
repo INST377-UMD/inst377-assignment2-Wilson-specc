@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dogs Page</title>
+
+<style>
+  body {
+  font-family: 'Courier New', monospace;
+  background-color: #fdfdfd;
+  color: #000;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+.navigation {
+  background-color: #ff0000; /* Pokémon red */
+  padding: 10px 0;
+  border-bottom: 4px solid #000;
+}
+
+.navigationLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navigationLinks li {
+  display: inline-block;
+  margin: 0 12px;
+}
+
+.navigationLinks a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.navigationLinks a:hover {
+  color: #ffcb05; /* Pokémon yellow */
+}
+
+.navigationBox {
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+  margin-top: 20px;
+}
+
+#dogRing {
+  width: 80%;
+  margin: 30px auto;
+  padding-bottom: 25%;
+}
+
+.slideBox {
+  text-align: center;
+}
+
+.slideBox img {
+  max-width: 100%;
+  height: auto;
+  border: 4px solid #000;
+  image-rendering: pixelated;
+}
+
+.breedButtons {
+  margin: 20px auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.breedButtons {
+  padding: 10px 16px;
+  background-color: #3b4cca; /* Pokémon blue */
+  color: white;
+  border: 2px solid black;
+  font-family: 'Courier New', monospace;
+  border-radius: 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.breedButtons:hover {
+  background-color: #ffcb05;
+  color: black;
+}
+
+.breedDesc {
+  display: none;
+  margin-top: 30px;
+  background: #ffffff;
+  padding: 20px;
+  border: 3px solid #000;
+  font-family: 'Courier New', monospace;
+  width: 80%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.breedDesc h2 {
+  margin-top: 0;
+  border-bottom: 2px solid #000;
+  padding-bottom: 5px;
+}
+
+</style>
+</head>
+
+<body>
+
+  <nav class="navigation">
+    <div class="navigationBox">
+      <ul class="navigationLinks">
+        <li><a href="Home2.html">Home</a></li>
+        <li><a href="Dogs.html">Dogs</a></li>
+        <li><a href="Stocks.html">Stocks</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <h1> Who let the dogs out </h1>
+  <div data-simple-slider id="dogRing"></div>
+  <div class="breedButtons" id="breedButtons"></div>
+  <div class="breedDesc" id="breedInfo"></div>
+
+  <script src="https://rawgit.com/ruyadorno/simple-slider/master/dist/simpleslider.min.js"></script>
+
+  <script>
+    const carousel = document.getElementById('dogRing');
+    const breedButtonsContainer = document.getElementById('breedButtons');
+    const InfoBox = document.getElementById('breedInfo');
+
+    async function loadDogs() {
+      const json_res = await fetch('https://dog.ceo/api/breeds/image/random/10');
+      const data = await json_res.json();
+
+      data.message.forEach(DogImg => {
+        const SlideImages = document.createElement('div');
+        SlideImages.className = 'slideBox';
+
+        const img = document.createElement('img');
+        img.src = DogImg;DogImg
+
+        SlideImages.appendChild(img);
+        carousel.appendChild(SlideImages);
+      });
+
+      simpleslider.getSlider();
+    }
+
+    async function DogButtons() {
+      const json_res = await fetch('https://dogapi.dog/api/v2/breeds');
+      const api_data = await json_res.json();
+
+      api_data.data.forEach(breed => {
+        const button = document.createElement('button');
+        button.textContent = breed.attributes.name;
+        button.setAttribute('class', 'breed-button');
+
+        button.addEventListener('click', () => {
+          DogInformation(breed);
+        });
+
+        breedButtonsContainer.appendChild(button);
+      });
+    }
+
+    function DogInformation(breed) {
+      const { name, description, life } = breed.attributes;
+
+      InfoBox.innerHTML = `
+        <h2>${name}</h2>
+        <p>Description: ${description}</p>
+        <p>Min Life Expectancy: ${life.min} years</p>
+        <p><Max Life Expectancy: ${life.max} years</p>
+      `;
+
+      InfoBox.style.display = 'block';
+      InfoBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    loadDogs();
+    DogButtons();
+  </script>
+
+</body>
+</html>

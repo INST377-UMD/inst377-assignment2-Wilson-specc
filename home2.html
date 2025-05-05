@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Page</title>
+<style>
+  body {
+    font-family: 'Courier New', monospace;
+    background-color: #fefefe;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navigation {
+    background-color: #ff0000; 
+    padding: 8px 0;
+    border-bottom: 4px solid #000;
+  }
+  
+  .navigationLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navigationLinks li {
+    display: inline-block;
+    margin: 0 12px;
+  }
+  
+  .navigationLinks a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .navigationLinks a:hover {
+    color: #ffff00; 
+  }
+  
+  .navigationBox {
+    text-align: center;
+  }
+  
+  .quotebutton {
+    font-size: 16px;
+    padding: 8px 16px;
+    margin: 10px;
+    background-color: #0070f3;
+    color: white;
+    border: 2px solid black;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .quotebutton:hover {
+    background-color: #ffff00;
+    color: black;
+    border-color: #000;
+  }
+  
+  .StopVoiceButton {
+    margin-top: 20px;
+    padding: 8px 16px;
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #ff0000;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .instructions {
+    margin: 30px auto;
+    max-width: 600px;
+    background-color: #dcdcdc;
+    padding: 15px;
+    border: 2px solid #000;
+    font-family: 'Courier New', monospace;
+  }
+  
+  #quoteBox {
+    margin-top: 30px;
+    font-size: 1.2rem;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navigation">
+    <div class="navigationBox">
+      <ul class="navigationLinks">
+        <li><a href="Home2.html">Home</a></li>
+        <li><a href="Dogs.html">Dogs</a></li>
+        <li><a href="Stocks.html">Stocks</a></li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <div style="text-align:center; margin-top: 40px;">
+    <button class="quotebutton" onclick="location.href='Dogs.html'">Dogs</button>
+    <button class="quotebutton" onclick="location.href='Stocks.html'">Stocks</button>
+
+    <div id="quoteBox">Getting the QOTD: </div>
+
+    <button id="stop-voice" class="StopVoiceButton">Stop Voice Control</button>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <h2>Voice Command Instructions</h2>
+    <p>Say these commands to recieve an alert or to do a command:</p>
+    <ul>
+      <li><em>"Hello"</em> — "Hello World alert"</li>
+      <li><em>"Change color"</em> — Changes background color to beige.</li>
+      <li><em>"Go home"</em> — Navigate to the Home page.</li>
+      <li><em>"Go to dogs"</em> — Navigate to the Dogs page.</li>
+      <li><em>"Go to stocks"</em> — Navigate to the Stocks page.</li>
+    </ul>
+  </div>
+
+  <!-- Quote of the Day Script -->
+  <script type="text/javascript">
+    const api_url = "https://zenquotes.io/api/random";
+
+    async function getapi(url) {
+  const json_response = await fetch(url);
+  const api_data = await json_response.json();
+  const QOTD = api_data[0].q;
+  const QOTDauthor = api_data[0].a;
+  document.getElementById("quoteBox").innerHTML = `"${QOTD}"<br><em>- ${QOTDauthor}</em>`;
+}
+
+    getapi(api_url);
+  </script>
+
+  <!-- Voice Control Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script>
+    if (annyang) {
+      const voice = {
+        'hello': () => {
+          alert('Hello world!');
+        },
+        'change color': () => {
+          document.body.style.backgroundColor = 'beige';
+        },
+        'go home': () => {
+          window.location.href = 'Home2.html';
+        },
+        'go to dogs': () => {
+          window.location.href = 'Dogs.html';
+        },
+        'go to stocks': () => {
+          window.location.href = 'Stocks.html';
+        }
+      };
+
+      annyang.addCommands(voice);
+      annyang.start();
+
+      document.getElementById('stop-voice').addEventListener('click', () => {
+        annyang.abort();
+        alert('Voice control stopped.');
+      });
+    }
+  </script>
+
+</body>
+</html>
