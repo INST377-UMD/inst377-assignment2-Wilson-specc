@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Chart Lookup</title>
+  <style>
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #fdfdfd;
+  color: #000;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.navigation {
+  background-color: #ff0000;
+  padding: 10px 0;
+  border-bottom: 4px solid #000;
+}
+
+.navigationLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navigationLinks li {
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.navigationLinks a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.navigationLinks a:hover {
+  color: #ffcb05;
+}
+
+.navigationBox {
+  text-align: center;
+}
+
+.contact {
+  margin: 20px auto;
+  padding: 10px 16px;
+  background-color: #000;
+  color: #fff;
+  border: 2px solid #ff0000;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+
+.instructions {
+  margin: 20px auto;
+  max-width: 600px;
+  background-color: #eaeaea;
+  padding: 15px;
+  border: 2px solid #000;
+  font-family: 'Courier New', monospace;
+  text-align: left;
+}
+
+.controls {
+  text-align: center;
+  margin: 30px auto;
+}
+
+input, select {
+  padding: 10px;
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  border: 2px solid #000;
+  background-color: #fff;
+  color: #000;
+  margin: 5px;
+}
+
+#stock_button {
+  background-color: #3b4cca;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 2px solid black;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+
+#stock_button:hover {
+  background-color: #ffcb05;
+  color: black;
+}
+
+#stock-chart {
+  max-width: 1000px;
+  margin: 30px auto;
+  border: 3px solid #000;
+  background-color: #1eff00;
+}
+
+table {
+  margin: 30px auto;
+  border-collapse: collapse;
+  width: 90%;
+  max-width: 800px;
+  font-family: 'Courier New', monospace;
+  border: 2px solid #000;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #000;
+  text-align: center;
+  font-size: 14px;
+}
+
+th {
+  background-color: #dcdcdc;
+}
+
+h2 {
+  margin-top: 40px;
+  font-family: 'Courier New', monospace;
+}
+
+  </style>
+</head>
+<body>
+
+  <nav class="navigation">
+    <div class="navigationBox">
+      <ul class="navigationLinks">
+        <li><a href="Home2.html">Home</a></li>
+        <li><a href="Dogs.html">Dogs</a></li>
+        <li><a href="Stocks.html">Stocks</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  
+
+  <div class="controls">
+    <input type="text" id="ticker-input" placeholder="Enter Stock Symbol (e.g., AAPL)" />
+    <select id="days_range">
+      <option value="30">30 Days</option>
+      <option value="60">60 Days</option>
+      <option value="90">90 Days</option>
+    </select>
+    <button id="stock_button">Load Stock Chart</button>
+  </div>
+
+  <canvas id="stock-chart" width="800" height="400"></canvas>
+
+  <h2 style="text-align:center;">Top 5 Stocks on Reddit (Apr 3, 2022)</h2>
+  <table id="reddit-table">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Comment Count</th>
+        <th>Sentiment</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    if (annyang) {
+      const voice = {
+        'hello': () => { alert('Hello world!'); },
+        'change color': () => { document.body.style.backgroundColor = 'beige'; },
+        'go home': () => { window.location.href = 'Home2.html'; },
+        'go to dogs': () => { window.location.href = 'Dogs.html'; },
+        'go to stocks': () => { window.location.href = 'Stocks.html'; }
+      };
+      annyang.addCommands(voice);
+      annyang.start();
+    }
+
+    document.getElementById('stock_button').addEventListener('click', async () => {
+      const apiKey = 'qxvK6H2XDWa36ZLXuh8mwqgvhbmnSoti';
+      const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+      const rangeDays = parseInt(document.getElementById('days_range').value);
+
+      const todayFromComp = new Date();
+      const CompDate = new Date(todayFromComp);
+      CompDate.setDate(CompDate.getDate() - rangeDays);
+      const fromString = CompDate.toISOString().split('T')[0];
+      const toString = todayFromComp.toISOString().split('T')[0];
+
+      const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${fromString}/${toString}?adjusted=true&sort=asc&limit=${rangeDays}&apiKey=${apiKey}`;
+
+      try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (!result.results || result.results.length === 0) {
+          alert(`This stock was not found ${ticker}`);
+          return;
+        }
+
+
+
+const daysList = result.results.map(day => new Date(day.t).toLocaleDateString());
+const closingPricesList = result.results.map(day => day.c);
+
+const chartStuff = {
+  labels: daysList,
+  datasets: [{
+    label: `${ticker} Closing Prices (Last ${rangeDays} Days)`,
+    data: closingPricesList,
+    fill: false,
+    borderColor: 'rgb(100, 100, 100)',
+    tension: 0.1
+  }]
+};
+
+const chartOptions = {
+  type: 'line',
+  data: chartStuff
+};
+
+const chartArea = document.getElementById('stock-chart').getContext('2d');
+if (window.stockChart) window.stockChart.destroy();
+window.stockChart = new Chart(chartArea, chartOptions);
+
+      } catch (err) {
+        console.error(err);
+        alert("Error loading stock data.");
+      }
+    });
+
+
+    (async () => {
+      try {
+        const RedditResponse = await fetch("https://tradestie.com/api/v1/apps/reddit?date=2022-04-03");
+        const RedditData = await RedditResponse.json();
+        const TopFiveReddit = RedditData.slice(0, 5);
+
+        const tableBody = document.querySelector("#reddit-table tbody");
+
+        TopFiveReddit.forEach(stock => {
+          const tables4Reddit = document.createElement("tr");
+          const emoji = stock.sentiment.toLowerCase() === "bullish" ? "🐂" : "🐻";
+
+          tables4Reddit.innerHTML = `
+            <td><a href="https://finance.yahoo.com/quote/${stock.ticker}" target="_blank">${stock.ticker}</a></td>
+            <td>${stock.no_of_comments}</td>
+            <td>${stock.sentiment} ${emoji}</td>
+          `;
+
+          tableBody.appendChild(tables4Reddit);
+        });
+      } catch (err) {
+        console.error("Failed to load Reddit data:", err);
+      }
+    })();
+  </script>
+
+<button id="stop-voice" class="contact">Stop Voice Control</button>
+
+<div class="voiceInstructions">
+  <h2>Voice Command Instructions</h2>
+  <p>Say these commands out loud:</p>
+  <ul>
+    <li><em>"Hello"</em> — "Hello World alert"</li>
+    <li><em>"Change color"</em> — Changes background color to beige.</li>
+    <li><em>"Go home"</em> — Navigate to the Home page.</li>
+    <li><em>"Go to dogs"</em> — Navigate to the Dogs page.</li>
+    <li><em>"Go to stocks"</em> — Navigate to the Stocks page.</li>
+  </ul>
+  <p><em>Make sure to allow microphone access when the browser asks!</em></p>
+</div>
+</body>
+</html>
